@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'users.apps.UsersConfig',
+    'foodgram.apps.FoodgramConfig',
     'api.apps.ApiConfig',
     'rest_framework.authtoken',
     'djoser',

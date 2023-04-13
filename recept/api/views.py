@@ -3,7 +3,7 @@ from rest_framework.response import Response, responses
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from users.models import User
-from .serializers import NewPasswordSerializer, NewUserSerializer, ProfilesSerializer, UserTokenSerializer
+from .serializers import NewPasswordSerializer, NewUserSerializer, ProfilesSerializer
 from .permissions import Admin, AdminOrUser
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.authtoken.models import Token
