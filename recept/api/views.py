@@ -156,8 +156,8 @@ class ReceptViewSet(viewsets.ModelViewSet):
                                           context={"request": request})
             serializer.is_valid(raise_exception=True)
             if not Favorite.objects.filter(user=request.user,
-                                           recipe=recept).exists():
-                Favorite.objects.create(user=request.user, recipe=recept)
+                                           recept=recept).exists():
+                Favorite.objects.create(user=request.user, recept=recept)
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
             return Response({'errors': 'Рецепт ранее добавлен в избранное'},

@@ -2,8 +2,6 @@ from users.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, RegexValidator
 
-CHARS_IN_RETURN_RECIEPT: int = 15
-
 
 class Ingredient(models.Model):
     name = models.CharField(
@@ -82,7 +80,7 @@ class Recept(models.Model):
 
     ingridientes = models.ManyToManyField(
         Ingredient,
-        verbose_name='Ингридиенты',
+        verbose_name='Ингредиенты',
         help_text='Выберите ингридиенты',
         blank=False,
     )
@@ -110,7 +108,7 @@ class Recept(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return self.text[:CHARS_IN_RETURN_RECIEPT]
+        return self.text[:15]
 
 
 class Quantity_ingredientes(models.Model):
@@ -132,23 +130,46 @@ class Quantity_ingredientes(models.Model):
     class Meta:
         verbose_name = 'Количество ингредиентов для приготовления'
         verbose_name_plural = 'Количество ингредиентов для приготовления'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recept', 'ingredient'],
+                name='unique_combination'
+            )
+        ]
+
+    def __str__(self):
+        return (f'{self.recept.title}: '
+                f'{self.ingredient.name} - '
+                f'{self.quantity} '
+                f'{self.ingredient.izmerenie}')
 
 
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Любимый автор'
+        related_name='favorite_user',
+        verbose_name='Любимый автор',
     )
     recept = models.ForeignKey(
         Recept,
         on_delete=models.CASCADE,
-        verbose_name='Любимый рецепт'
+        verbose_name='Любимый рецепт',
+        related_name='favorite_recept',
     )
 
     class Meta:
         verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранные'
+        verbose_name_plural = 'Избранное'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recept'],
+                name='unique_favorite'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} - {self.recept.title}'
 
 
 class For_shop(models.Model):

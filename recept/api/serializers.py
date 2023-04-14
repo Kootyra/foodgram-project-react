@@ -80,10 +80,22 @@ class FollowSerializer(serializers.ModelSerializer):
                                       author=obj).exists()
         )
 
+    def get_recept_count(self, obj):
+        return obj.recept.count()
+
+    def get_recepts(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recepts_limit')
+        recepts = obj.recept.all()
+        if limit:
+            recepts = recepts[:int(limit)]
+        serializer = ReceptSerializer(recepts, many=True, read_only=True)
+        return serializer.data
+
 
 class ReceptSerializer(serializers.ModelSerializer):
     image = Base64ImageField(read_only=True)
-    name = serializers.ReadOnlyField()
+    title = serializers.ReadOnlyField()
     tiempo = serializers.ReadOnlyField()
 
     class Meta:
@@ -107,8 +119,8 @@ class TagSerializer(serializers.ModelSerializer):
 class ReceptIngredientSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit')
+    izmerenie = serializers.ReadOnlyField(
+        source='ingredient.izmerenie')
 
     class Meta:
         model = Quantity_ingredientes
@@ -137,7 +149,7 @@ class ReceptReadSerializer(serializers.ModelSerializer):
         return (
             self.context.get('request').user.is_authenticated
             and Favorite.objects.filter(user=self.context['request'].user,
-                                        recipe=obj).exists()
+                                        recept=obj).exists()
         )
 
     def get_is_in_shopping_cart(self, obj):
@@ -145,7 +157,7 @@ class ReceptReadSerializer(serializers.ModelSerializer):
             self.context.get('request').user.is_authenticated
             and For_shop.objects.filter(
                 user=self.context['request'].user,
-                recipe=obj).exists()
+                recept=obj).exists()
         )
 
 
@@ -217,10 +229,10 @@ class ReceptCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recept.objects.create(author=self.context['request'].user,
+        recept = Recept.objects.create(author=self.context['request'].user,
                                        **validated_data)
-        self.tags_and_ingredients_set(recipe, tags, ingredients)
-        return recipe
+        self.tags_and_ingredients_set(recept, tags, ingredients)
+        return recept
 
     def update(self, instance, validated_data):
         instance.image = validated_data.get('image', instance.image)
@@ -231,7 +243,7 @@ class ReceptCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         Recept.objects.filter(
-            recipe=instance,
+            recept=instance,
             ingredient__in=instance.ingredients.all()).delete()
         self.tags_and_ingredients_set(instance, tags, ingredients)
         instance.save()
