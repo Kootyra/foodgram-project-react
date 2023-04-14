@@ -50,4 +50,3 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'user', 'recept')
     list_editable = ('user', 'recept')
-

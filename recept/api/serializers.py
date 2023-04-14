@@ -1,31 +1,31 @@
 from djoser.serializers import UserSerializer, serializers
 from django.contrib.auth.password_validation import validate_password
 from users.models import User, Follow
-from foodgram.models import Ingredient, Recept, Tag, Quantity_ingredientes, Favorite, For_shop
+from foodgram.models import (Ingredient, Recept, Tag, Quantity_ingredientes,
+                             Favorite, For_shop)
 from django.core import exceptions as django_exceptions
 from drf_extra_fields.fields import Base64ImageField
-
-
 
 
 class NewUserSerializer(UserSerializer):
     password = serializers.CharField(write_only=True,
                                      style={'input_type': 'password'})
-    
+
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password')
-    
+        fields = ('email', 'id', 'username',
+                  'first_name', 'last_name', 'password')
+
     def validate_username(self, value):
         if value.lower() == "me":
             raise serializers.ValidationError("Username 'me' is not valid")
         return value
 
+
 class ProfilesSerializer(UserSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',)
-
 
 
 class UserTokenSerializer(serializers.Serializer):
@@ -61,6 +61,7 @@ class NewPasswordSerializer(serializers.Serializer):
         instance.save()
         return validated_data
 
+
 class FollowSerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField()
     username = serializers.ReadOnlyField()
@@ -72,7 +73,6 @@ class FollowSerializer(serializers.ModelSerializer):
                   'username', 'is_subscribed',
                   )
 
-    
     def get_is_subscribed(self, obj):
         return (
             self.context.get('request').user.is_authenticated

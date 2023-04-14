@@ -1,17 +1,22 @@
 from django.http import HttpResponse
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
-from rest_framework.response import Response, responses
+from rest_framework.response import Response
 from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from users.models import User, Follow
-from foodgram.models import Ingredient, Recept, Tag, Quantity_ingredientes, Favorite, For_shop
-from .serializers import FollowSerializer, ReceptSerializer, IngredientSerializer, TagSerializer, ReceptIngredientSerializer, ReceptIngredientCreateSerializer, ReceptCreateSerializer, NewPasswordSerializer, ReceptReadSerializer, NewUserSerializer, ProfilesSerializer, UserTokenSerializer
-from .permissions import Admin, AdminOrUser, IsAuthorUserAdminOrReadOnly, IsAuthorOrReadOnly
+from foodgram.models import Ingredient, Recept, Tag, Favorite, For_shop
+from .serializers import (FollowSerializer, ReceptSerializer,
+                          IngredientSerializer, TagSerializer,
+                          ReceptCreateSerializer, NewPasswordSerializer,
+                          ReceptReadSerializer, NewUserSerializer,
+                          ProfilesSerializer, UserTokenSerializer)
+from .permissions import AdminOrUser, IsAuthorOrReadOnly
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ReceptFilter
+
+FILE = 'shop.txt'
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -21,7 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return ProfilesSerializer
         return NewUserSerializer
-    
+
     def get_permissions(self):
         self.permission_classes = [permissions.AllowAny]
         if self.request.method == "GET":
@@ -46,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     @action(detail=False, methods=['get'],
             pagination_class=None,
             permission_classes=(permissions.IsAuthenticated,))
@@ -55,7 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data,
                         status=status.HTTP_200_OK)
 
-    @action(detail=False, 
+    @action(detail=False,
             methods=['post'],
             permission_classes=(permissions.IsAuthenticated,))
     def set_password(self, request):
@@ -64,7 +69,7 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
         return Response({'detail': 'New password save'},
                         status=status.HTTP_204_NO_CONTENT)
-    
+
     @action(detail=False,
             methods=['get', ],
             permission_classes=(permissions.IsAuthenticated,),
@@ -75,7 +80,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = FollowSerializer(page, many=True,
                                       context={'request': request})
         return self.get_paginated_response(serializer.data)
-
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(permissions.IsAuthenticated,))
@@ -96,6 +100,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Вы отписались от пользователя'},
                             status=status.HTTP_204_NO_CONTENT)
 
+
 class UserTokenViewSet(viewsets.ViewSet):
     permission_classes = (permissions.AllowAny,)
 
@@ -106,8 +111,8 @@ class UserTokenViewSet(viewsets.ViewSet):
         user_form_pas = serializer.initial_data.get('password')
         user = get_object_or_404(User, email=user_form, password=user_form_pas)
         token = AccessToken.for_user(user)
-       # token = Token.objects.create(user=user)
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
+
 
 class IngredientViewSet(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
@@ -206,5 +211,5 @@ class ReceptViewSet(viewsets.ModelViewSet):
             '{} - {} {}.'.format(*ingredient)) for ingredient in ingredients]
         file = HttpResponse('Cписок покупок:\n' + '\n'.join(file_list),
                             content_type='text/plain')
-        file['Content-Disposition'] = (f'attachment; filename={shop.txt}')
+        file['Content-Disposition'] = (f'attachment; filename={FILE}')
         return file

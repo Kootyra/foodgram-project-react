@@ -31,4 +31,4 @@ class Command(BaseCommand):
                         izmerenie=izmerenie
                     )
         except FileNotFoundError:
-            raise CommandError('Добавьте файл ingredients.csv в директорию backend/data ')
+            raise CommandError('Не обнаружен ingredients.csv')

@@ -79,7 +79,7 @@ class Recept(models.Model):
         help_text='Здесь будет Ваш рецепт',
         null=False,
         )
-    
+
     ingridientes = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингридиенты',
@@ -104,7 +104,7 @@ class Recept(models.Model):
         verbose_name='Дата публикации',
         auto_now_add=True,
         )
-    
+
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
@@ -165,5 +165,3 @@ class For_shop(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-
-                                      
