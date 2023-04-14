@@ -6,11 +6,12 @@ from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from users.models import User, Follow
 from foodgram.models import Ingredient, Recept, Tag, Favorite, For_shop
-from .serializers import (FollowSerializer, ReceptSerializer,
+from .serializers import (FollowSerializer, ReceptSerializer, 
                           IngredientSerializer, TagSerializer,
                           ReceptCreateSerializer, NewPasswordSerializer,
                           ReceptReadSerializer, NewUserSerializer,
-                          ProfilesSerializer, UserTokenSerializer)
+                          ProfilesSerializer, UserTokenSerializer,
+                          Quantity_ingredientes,)
 from .permissions import AdminOrUser, IsAuthorOrReadOnly
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
@@ -199,7 +200,7 @@ class ReceptViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated,))
     def download_shopping_cart(self, request, **kwargs):
         ingredients = (
-            Ingredient.objects
+            Quantity_ingredientes.objects
             .filter(recept__shopping_recept__user=request.user)
             .values('ingredient')
             .annotate(total_amount=Sum('quantity'))

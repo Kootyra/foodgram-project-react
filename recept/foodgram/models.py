@@ -176,13 +176,17 @@ class For_shop(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='shopping_user',
     )
     recept = models.ForeignKey(
         Recept,
         on_delete=models.CASCADE,
-        verbose_name='В список покупок'
+        verbose_name='В список покупок',
+        related_name='shopping_recept',
     )
 
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+
+
