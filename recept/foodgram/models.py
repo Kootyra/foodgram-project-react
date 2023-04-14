@@ -66,7 +66,7 @@ class Recept(models.Model):
         help_text='Укажите название блюда',
         null=False,
         max_length=150,
-    )  
+    )
     image = models.ImageField(
         verbose_name='Изображение',
         help_text='Загрузите картинку ',
@@ -165,3 +165,5 @@ class For_shop(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+
+                                      
