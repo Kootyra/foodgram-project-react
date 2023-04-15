@@ -149,7 +149,7 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
         return (
             self.context.get('request').user.is_authenticated
             and Favorite.objects.filter(user=self.context['request'].user,
-                                        receipt=obj).exists()
+                                        recipe=obj).exists()
         )
 
     def get_is_in_shopping_cart(self, obj):
@@ -162,7 +162,6 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
 
 
 class ReceiptIngredientCreateSerializer(serializers.ModelSerializer):
-    """Ингредиент и количество для создания рецепта."""
     id = serializers.IntegerField()
 
     class Meta:
@@ -171,7 +170,6 @@ class ReceiptIngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class ReceiptCreateSerializer(serializers.ModelSerializer):
-    """[POST, PATCH, DELETE] Создание, изменение и удаление рецепта."""
     tags = serializers.PrimaryKeyRelatedField(many=True,
                                               queryset=Tag.objects.all())
     author = UserSerializer(read_only=True)
@@ -202,17 +200,17 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
                 )
         if not obj.get('tags'):
             raise serializers.ValidationError(
-                'Выбирите не менее одного тега'
+                'Выбeрите не менее одного тега'
             )
         if not obj.get('ingredients'):
             raise serializers.ValidationError(
-                'Выбирите не менее одного ингридиента'
+                'Выбeрите не менее одного ингридиента'
             )
         inrgedient_id_list = [item['id'] for item in obj.get('ingredients')]
         unique_ingredient_id_list = set(inrgedient_id_list)
         if len(inrgedient_id_list) != len(unique_ingredient_id_list):
             raise serializers.ValidationError(
-                'Вы уже добавили данный ингридиент'
+                'Вы уже добавили данный ингрeдиент'
             )
         return obj
 
@@ -251,4 +249,4 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return ReceiptReadSerializer(instance,
-                                    context=self.context).data
+                                     context=self.context).data

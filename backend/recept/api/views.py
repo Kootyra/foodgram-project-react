@@ -91,7 +91,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer = FollowSerializer(
                 author, data=request.data, context={"request": request})
             serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=request.user, author=author)
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
 
@@ -178,7 +177,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = ReceiptSerializer(receipt, data=request.data,
-                                          context={"request": request})
+                                           context={"request": request})
             serializer.is_valid(raise_exception=True)
             if not For_shop.objects.filter(user=request.user,
                                            receipt=receipt).exists():

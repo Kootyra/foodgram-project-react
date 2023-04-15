@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='favorite',
             name='receipt',
-            field=models.ForeignKey(default=django.utils.timezone.now, on_delete=django.db.models.deletion.CASCADE, related_name='favorite_receipt', to='foodgram.receipt', verbose_name='Любимый рецепт'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='favorite_receipt', to='foodgram.receipt', verbose_name='Любимый рецепт'),
             preserve_default=False,
         ),
         migrations.AddField(
