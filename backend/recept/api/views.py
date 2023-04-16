@@ -11,7 +11,8 @@ from .serializers import (FollowSerializer, ReceiptSerializer,
                           ReceiptCreateSerializer, NewPasswordSerializer,
                           ReceiptReadSerializer, CreateUserSerializer,
                           ProfilesSerializer, UserTokenSerializer,
-                          Quantity_ingredientes,)
+                          Quantity_ingredientes, FavoriteSerializer,
+                          ForShopSerializer)
 from .permissions import AdminOrUser, IsAuthorOrReadOnly
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
@@ -89,16 +90,23 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = FollowSerializer(
-                author, data=request.data, context={"request": request})
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-
+                context={'author': author, "request": request},
+                data=request.data,)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if request.method == 'DELETE':
             get_object_or_404(Follow, user=request.user,
                               author=author).delete()
             return Response({'detail': 'Вы отписались от пользователя'},
                             status=status.HTTP_204_NO_CONTENT)
+        
+
 
 
 class UserTokenViewSet(viewsets.ViewSet):
@@ -150,14 +158,15 @@ class ReceiptViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated,))
     def favorite(self, request, **kwargs):
         receipt = get_object_or_404(Receipt, id=kwargs['pk'])
-
+        user = request.user
         if request.method == 'POST':
-            serializer = ReceiptSerializer(receipt, data=request.data,
-                                           context={"request": request})
-            serializer.is_valid(raise_exception=True)
-            if not Favorite.objects.filter(user=request.user,
-                                           receipt=receipt).exists():
-                Favorite.objects.create(user=request.user, receipt=receipt)
+            data = {'user': user.id, 'receipt': receipt.id}
+            serializer = FavoriteSerializer(context={
+                'receipt': receipt,
+                'request': request
+            }, data=data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
             return Response({'errors': 'Рецепт ранее добавлен в избранное'},
@@ -174,19 +183,20 @@ class ReceiptViewSet(viewsets.ModelViewSet):
             pagination_class=None)
     def shopping_cart(self, request, **kwargs):
         receipt = get_object_or_404(Receipt, id=kwargs['pk'])
-
+        user = request.user
         if request.method == 'POST':
-            serializer = ReceiptSerializer(receipt, data=request.data,
-                                           context={"request": request})
-            serializer.is_valid(raise_exception=True)
-            if not For_shop.objects.filter(user=request.user,
-                                           receipt=receipt).exists():
-                For_shop.objects.create(user=request.user, receipt=receipt)
+            data = {'user': user.id, 'receipt': receipt.id}
+            serializer = ForShopSerializer(context={
+                'receipt': receipt,
+                'request': request
+            }, data=data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
-            return Response({'errors': 'Рецепт уже в списке покупок.'},
+            return Response({'errors': 'Рецепт ранее добавлен в избранное'},
                             status=status.HTTP_400_BAD_REQUEST)
-
+        
         if request.method == 'DELETE':
             get_object_or_404(For_shop, user=request.user,
                               receipt=receipt).delete()

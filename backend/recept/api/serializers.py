@@ -68,11 +68,31 @@ class FollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = Follow
         fields = ('email', 'id',
                   'username', 'is_subscribed',
                   )
+    
+    def create(self, validated_data):
+        author = self.context.get('author')
+        user = self.context.get('request').user
+        if author == user:
+            raise serializers.ValidationError(
+                {'error': 'Вы не можете подписаться на себя'}
+            )
+        if Follow.objects.filter(
+            user=user,
+            author=author
+        ).exists():
+            raise serializers.ValidationError(
+                {'error': 'Вы уже подписаны на этого автора'}
+            )
 
+        return Follow.objects.create(
+            user=user,
+            author=author
+        )
+    
     def get_is_subscribed(self, obj):
         return (
             self.context.get('request').user.is_authenticated
@@ -149,7 +169,7 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
         return (
             self.context.get('request').user.is_authenticated
             and Favorite.objects.filter(user=self.context['request'].user,
-                                        recipe=obj).exists()
+                                        receipt=obj).exists()
         )
 
     def get_is_in_shopping_cart(self, obj):
@@ -250,3 +270,63 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return ReceiptReadSerializer(instance,
                                      context=self.context).data
+
+class FavoriteSerializer(serializers.ModelSerializer):
+
+    id = serializers.ReadOnlyField(source='receipt.id')
+    title = serializers.ReadOnlyField(source='receipt.title')
+    image = serializers.ImageField(source='receipt.image', required=False)
+    tiempo = serializers.IntegerField(
+        source='receipt.tiempo', required=False)
+
+    class Meta:
+        model = Favorite
+        fields = (
+            'id',
+            'title',
+            'image',
+            'tiempo',
+        )
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        receipt = self.context.get('receipt')
+        if Favorite.objects.filter(
+            user=user,
+            receipt=receipt,
+        ).exists():
+            raise serializers.ValidationError(
+                {'error': 'Рецепт уже в избранном'},
+            )
+
+        return Favorite.objects.create(user=user, receipt=receipt)
+    
+class ForShopSerializer(serializers.ModelSerializer):
+
+    id = serializers.ReadOnlyField(source='receipt.id')
+    title = serializers.ReadOnlyField(source='receipt.title')
+    image = serializers.ImageField(source='receipt.image', required=False)
+    tiempo = serializers.IntegerField(
+        source='receipt.tiempo', required=False)
+
+    class Meta:
+        model = For_shop
+        fields = (
+            'id',
+            'title',
+            'image',
+            'tiempo',
+        )
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        receipt = self.context.get('receipt')
+        if For_shop.objects.filter(
+            user=user,
+            receipt=receipt,
+        ).exists():
+            raise serializers.ValidationError(
+                {'error': 'Рецепт уже в избранном'},
+            )
+
+        return For_shop.objects.create(user=user, receipt=receipt)
