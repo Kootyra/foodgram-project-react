@@ -68,11 +68,11 @@ class FollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        model = Follow
+        model = User
         fields = ('email', 'id',
                   'username', 'is_subscribed',
                   )
-    
+
     def create(self, validated_data):
         author = self.context.get('author')
         user = self.context.get('request').user
@@ -92,13 +92,9 @@ class FollowSerializer(serializers.ModelSerializer):
             user=user,
             author=author
         )
-    
+
     def get_is_subscribed(self, obj):
-        return (
-            self.context.get('request').user.is_authenticated
-            and Follow.objects.filter(user=self.context['request'].user,
-                                      author=obj).exists()
-        )
+        return obj.id in self.context['subscriptions']
 
     def get_receipt_count(self, obj):
         return obj.receipt.count()
@@ -248,7 +244,7 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         receipt = Receipt.objects.create(author=self.context['request'].user,
-                                       **validated_data)
+                                         **validated_data)
         self.tags_and_ingredients_set(receipt, tags, ingredients)
         return receipt
 
@@ -270,6 +266,7 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return ReceiptReadSerializer(instance,
                                      context=self.context).data
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
 
@@ -300,7 +297,8 @@ class FavoriteSerializer(serializers.ModelSerializer):
             )
 
         return Favorite.objects.create(user=user, receipt=receipt)
-    
+
+
 class ForShopSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField(source='receipt.id')

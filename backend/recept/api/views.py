@@ -6,7 +6,7 @@ from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from users.models import User, Follow
 from foodgram.models import Ingredient, Receipt, Tag, Favorite, For_shop
-from .serializers import (FollowSerializer, ReceiptSerializer, 
+from .serializers import (FollowSerializer,
                           IngredientSerializer, TagSerializer,
                           ReceiptCreateSerializer, NewPasswordSerializer,
                           ReceiptReadSerializer, CreateUserSerializer,
@@ -77,10 +77,19 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated,),
             )
     def subscriptions(self, request):
-        queryset = User.objects.filter(following__user=request.user)
-        page = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(page, many=True,
-                                      context={'request': request})
+        authors = self.paginate_queryset(
+            Follow.objects.filter(user=request.user)
+        )
+        serializer = FollowSerializer(
+            authors,
+            many=True,
+            context={
+                    'request': request,
+                    'subscriptions':
+                    set(Follow.objects.filter(user_id=self.request.user)
+                        .values_list('author_id', flat=True))
+            }
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'],
@@ -90,8 +99,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = FollowSerializer(
-                context={'author': author, "request": request},
-                data=request.data,)
+                context={
+                    'author': author,
+                    'request': request,
+                    'subscriptions':
+                    set(Follow.objects.filter(user_id=self.request.user)
+                        .values_list('author_id', flat=True))
+                }, data=request.data
+            )
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data,
@@ -105,8 +120,11 @@ class UserViewSet(viewsets.ModelViewSet):
                               author=author).delete()
             return Response({'detail': 'Вы отписались от пользователя'},
                             status=status.HTTP_204_NO_CONTENT)
-        
 
+    def get_serializer_context(self):
+        context = super(UserViewSet, self).get_serializer_context()
+        print(context)
+        return context
 
 
 class UserTokenViewSet(viewsets.ViewSet):
@@ -196,7 +214,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
                                 status=status.HTTP_201_CREATED)
             return Response({'errors': 'Рецепт ранее добавлен в избранное'},
                             status=status.HTTP_400_BAD_REQUEST)
-        
+
         if request.method == 'DELETE':
             get_object_or_404(For_shop, user=request.user,
                               receipt=receipt).delete()
