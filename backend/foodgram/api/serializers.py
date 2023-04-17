@@ -14,7 +14,7 @@ class CreateUserSerializer(UserSerializer):
         fields = ('email', 'id', 'username',
                   'first_name', 'last_name', 'password')
         extra_kwargs = {'password': {'write_only': True}}
-    
+
     def create(self, validated_data):
         user = User(
             email=validated_data['email'],
@@ -25,7 +25,6 @@ class CreateUserSerializer(UserSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-        
 
     def validate_username(self, value):
         if value.lower() == "me":
