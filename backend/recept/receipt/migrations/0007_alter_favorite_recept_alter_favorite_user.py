@@ -9,14 +9,14 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('foodgram', '0006_alter_favorite_options_alter_favorite_recept_and_more'),
+        ('receipt', '0006_alter_favorite_options_alter_favorite_recept_and_more'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='favorite',
             name='recept',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='foodgram.recept', verbose_name='Любимый рецепт'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='receipt.recept', verbose_name='Любимый рецепт'),
         ),
         migrations.AlterField(
             model_name='favorite',

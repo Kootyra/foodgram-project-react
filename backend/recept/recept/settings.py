@@ -47,11 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'users.apps.UsersConfig',
-    'foodgram.apps.FoodgramConfig',
+    'receipt.apps.ReceiptConfig',
     'api.apps.ApiConfig',
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
+    "django_rename_app",
 ]
 
 MIDDLEWARE = [

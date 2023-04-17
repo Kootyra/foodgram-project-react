@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from users.models import User, Follow
-from foodgram.models import Ingredient, Receipt, Tag, Favorite, For_shop
+from receipt.models import Ingredient, Receipt, Tag, Favorite, For_shop
 from .serializers import (FollowSerializer,
                           IngredientSerializer, TagSerializer,
                           ReceiptCreateSerializer, NewPasswordSerializer,

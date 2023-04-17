@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('foodgram', '0004_alter_for_shop_options_alter_ingredient_options_and_more'),
+        ('receipt', '0004_alter_for_shop_options_alter_ingredient_options_and_more'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='recept',
             name='ingridientes',
-            field=models.ManyToManyField(help_text='Выберите ингридиенты', to='foodgram.ingredient', verbose_name='Ингредиенты'),
+            field=models.ManyToManyField(help_text='Выберите ингридиенты', to='receipt.ingredient', verbose_name='Ингредиенты'),
         ),
         migrations.AddConstraint(
             model_name='quantity_ingredientes',

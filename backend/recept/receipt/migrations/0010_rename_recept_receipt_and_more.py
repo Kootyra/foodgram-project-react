@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('foodgram', '0009_alter_for_shop_recept_alter_for_shop_user'),
+        ('receipt', '0009_alter_for_shop_recept_alter_for_shop_user'),
     ]
 
     operations = [
@@ -42,13 +42,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='favorite',
             name='receipt',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='favorite_receipt', to='foodgram.receipt', verbose_name='Любимый рецепт'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='favorite_receipt', to='receipt.receipt', verbose_name='Любимый рецепт'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='for_shop',
             name='receipt',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='shopping_receipt', to='foodgram.receipt', verbose_name='В список покупок'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='shopping_receipt', to='receipt.receipt', verbose_name='В список покупок'),
             preserve_default=False,
         ),
         migrations.AddConstraint(

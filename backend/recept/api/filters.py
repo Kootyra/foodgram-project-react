@@ -1,5 +1,5 @@
 from django_filters.rest_framework import FilterSet, filters
-from foodgram.models import Receipt, Tag
+from receipt.models import Receipt, Tag
 
 
 class ReceiptFilter(FilterSet):

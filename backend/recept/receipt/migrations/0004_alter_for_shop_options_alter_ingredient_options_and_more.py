@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('foodgram', '0003_alter_favorite_options'),
+        ('receipt', '0003_alter_favorite_options'),
     ]
 
     operations = [

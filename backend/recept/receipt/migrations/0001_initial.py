@@ -42,8 +42,8 @@ class Migration(migrations.Migration):
                 ('tiempo', models.DecimalField(decimal_places=0, help_text='Укажите время приготовления в минутах', max_digits=3, validators=[django.core.validators.MinValueValidator(1)], verbose_name='Время приготовления')),
                 ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')),
                 ('author', models.ForeignKey(help_text='Укажите автора', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Автор рецепта')),
-                ('ingridientes', models.ManyToManyField(help_text='Выберите ингридиенты', to='foodgram.ingredient', verbose_name='Ингридиенты')),
-                ('tags', models.ManyToManyField(help_text='Выберите теги', to='foodgram.tag', verbose_name='Теги')),
+                ('ingridientes', models.ManyToManyField(help_text='Выберите ингридиенты', to='receipt.ingredient', verbose_name='Ингридиенты')),
+                ('tags', models.ManyToManyField(help_text='Выберите теги', to='receipt.tag', verbose_name='Теги')),
             ],
         ),
         migrations.CreateModel(
@@ -51,8 +51,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.IntegerField(validators=[django.core.validators.MinValueValidator(1)], verbose_name='Количество')),
-                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='foodgram.ingredient', verbose_name='Ингредиент')),
-                ('recept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='foodgram.recept', verbose_name='Рецепт')),
+                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='receipt.ingredient', verbose_name='Ингредиент')),
+                ('recept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='receipt.recept', verbose_name='Рецепт')),
             ],
             options={
                 'verbose_name': 'Количество ингрилиентов для приготовления',
@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
             name='For_shop',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('recept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='foodgram.recept', verbose_name='В список покупок')),
+                ('recept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='receipt.recept', verbose_name='В список покупок')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
             name='Favorite',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('recept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='foodgram.recept', verbose_name='Любимый рецепт')),
+                ('recept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='receipt.recept', verbose_name='Любимый рецепт')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Любимый автор')),
             ],
             options={

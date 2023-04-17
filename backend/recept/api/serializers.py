@@ -1,7 +1,7 @@
 from djoser.serializers import UserSerializer, serializers
 from django.contrib.auth.password_validation import validate_password
 from users.models import User, Follow
-from foodgram.models import (Ingredient, Receipt, Tag, Quantity_ingredientes,
+from receipt.models import (Ingredient, Receipt, Tag, Quantity_ingredientes,
                              Favorite, For_shop)
 from django.core import exceptions as django_exceptions
 from drf_extra_fields.fields import Base64ImageField
