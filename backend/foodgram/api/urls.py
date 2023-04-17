@@ -12,7 +12,7 @@ router.register(
     r'ingredients', IngredientViewSet, basename='ingredients')
 urlpatterns = [
     path('', include(router.urls)),
-    path('auth/token/login/', UserTokenViewSet.as_view({'post': 'token'}),
-         name='token'),
-    path('auth/', include('djoser.urls.authtoken')),
+#    path('auth/token/login/', UserTokenViewSet.as_view({'post': 'token'}),
+#         name='token'),
+    path(r'auth/', include('djoser.urls.authtoken')),
 ]

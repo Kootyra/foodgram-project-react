@@ -1,42 +1,38 @@
 version: '3.8'
 services:
 
-  frontend:
-    image: kootyara/foodgram_frontend:latest
-    volumes:
-      - ./frontend/:/app/result_build/
-
   db:
     image: postgres:13.0-alpine
     volumes:
       - db_value:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ../backend/foodgram/foodgram/.env
 
   backend:
-    image: kootyara/foodgram_backend:latest
-    restart: always
-    volumes:
-      - static_value:/app/static/
-      - media_value:/app/media/
-    depends_on:
-      - db
-    env_file:
-      - ./.env
+      build:
+        context: ../backend/foodgram
+        dockerfile: Dockerfile
+      restart: always
+      volumes:
+        - static_value:/app/static/
+        - media_value:/app/media/
+      depends_on:
+        - db
+      env_file:
+        - ../backend/foodgram/foodgram/.env
 
-  nginx_fb:
+
+  nginx:
     image: nginx:1.19.3
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./frontend/build:/usr/share/nginx/html/
-      - ./docs/:/usr/share/nginx/html/api/docs/
-      - static_value:/var/html/static_backend/
+      - ../frontend/build:/usr/share/nginx/html/
+      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_value:/var/html/static/
       - media_value:/var/html/media/
-    depends_on:
-      - backend
-      - frontend
+    restart: always
 
 volumes:
   db_value:

@@ -37,11 +37,6 @@ class User(AbstractUser):
         max_length=150,
         null=False,
     )
-    password = models.CharField(
-        verbose_name='Пароль',
-        max_length=150,
-        null=False,
-    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

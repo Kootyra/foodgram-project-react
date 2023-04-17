@@ -35,12 +35,6 @@ class UserViewSet(viewsets.ModelViewSet):
             self.permission_classes = [AdminOrUser]
         return super(UserViewSet, self).get_permissions()
 
-    def get_serializer_context(self):
-        context = {'subscriptions':
-                   set(Follow.objects.filter(user_id=self.request.user)
-                       .values_list('author_id', flat=True))}
-        return context
-
     @action(
         methods=[
             "get",
@@ -89,8 +83,12 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = FollowSerializer(
             authors,
             many=True,
-            context=self.get_serializer_context()
-
+            context={
+                    'request': request,
+                    'subscriptions':
+                    set(Follow.objects.filter(user_id=self.request.user)
+                        .values_list('author_id', flat=True))
+            }
         )
         return self.get_paginated_response(serializer.data)
 
@@ -122,6 +120,10 @@ class UserViewSet(viewsets.ModelViewSet):
                               author=author).delete()
             return Response({'detail': 'Вы отписались от пользователя'},
                             status=status.HTTP_204_NO_CONTENT)
+
+    def get_serializer_context(self):
+        context = super(UserViewSet, self).get_serializer_context()
+        return context
 
 
 class UserTokenViewSet(viewsets.ViewSet):
