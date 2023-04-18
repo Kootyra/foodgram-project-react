@@ -7,10 +7,10 @@ services:
       - db_value:/var/lib/postgresql/data/
     env_file:
       - ./.env
-
+  
   backend:
       build:
-        context: ./backend/foodgram
+        context: ../backend
         dockerfile: Dockerfile
       restart: always
       volumes:
@@ -21,6 +21,12 @@ services:
       env_file:
         - ./.env
 
+  frontend:
+    image: kootyara/foodgram_frontend:latest
+    volumes:
+      - ../frontend/:/app/result_build/
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:1.19.3
@@ -32,6 +38,8 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
+    depends_on:
+      - frontend
     restart: always
 
 volumes:
