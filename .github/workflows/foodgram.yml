@@ -29,13 +29,12 @@ jobs:
     steps:
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
-        with:
-          context: ~
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
+            cd ~
             sudo docker pull kootyara/foodgram_backend:latest
             sudo docker-compose stop
             sudo docker-compose rm -f backend
