@@ -39,8 +39,8 @@ jobs:
           uses: docker/build-push-action@v2 
           with:
             push: true
-            context: ./backend/foodgram
-            tags: kootyara/foodgram_backend:latest
+            context: ./backend
+            tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
 
   deploy:
       runs-on: ubuntu-latest
