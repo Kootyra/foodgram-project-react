@@ -34,7 +34,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            cd ~
+
             sudo docker pull kootyara/foodgram_backend:latest
             sudo docker-compose stop
             sudo docker-compose rm -f backend
