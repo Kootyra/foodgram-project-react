@@ -6,11 +6,11 @@ services:
     volumes:
       - db_value:/var/lib/postgresql/data/
     env_file:
-      - ../backend/foodgram/foodgram/.env
+      - ./backend/foodgram/foodgram/.env
 
   backend:
       build:
-        context: ../backend/foodgram
+        context: ./backend/foodgram
         dockerfile: Dockerfile
       restart: always
       volumes:
@@ -19,7 +19,7 @@ services:
       depends_on:
         - db
       env_file:
-        - ../backend/foodgram/foodgram/.env
+        - ./backend/foodgram/foodgram/.env
 
 
   nginx:
