@@ -122,12 +122,12 @@ class FollowSerializer(serializers.ModelSerializer):
 class ReceiptSerializer(serializers.ModelSerializer):
     image = Base64ImageField(read_only=True)
     title = serializers.ReadOnlyField()
-    tiempo = serializers.ReadOnlyField()
+    cooking_time = serializers.ReadOnlyField()
 
     class Meta:
         model = Receipt
         fields = ('id', 'title',
-                  'image', 'tiempo')
+                  'image', 'cooking_time')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -169,7 +169,7 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
                   'author', 'ingredients',
                   'is_favorited', 'is_in_shopping_cart',
                   'title', 'image',
-                  'text', 'tiempo')
+                  'text', 'cooking_time')
 
     def get_is_favorited(self, obj):
         return (
@@ -208,18 +208,18 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'ingredients',
                   'tags', 'image',
                   'title', 'text',
-                  'tiempo', 'author')
+                  'cooking_time', 'author')
         extra_kwargs = {
             'ingredients': {'required': True, 'allow_blank': False},
             'tags': {'required': True, 'allow_blank': False},
             'title': {'required': True, 'allow_blank': False},
             'text': {'required': True, 'allow_blank': False},
             'image': {'required': True, 'allow_blank': False},
-            'tiempo': {'required': True},
+            'cooking_time': {'required': True},
         }
 
     def validate(self, obj):
-        for field in ['title', 'text', 'tiempo']:
+        for field in ['title', 'text', 'cooking_time']:
             if not obj.get(field):
                 raise serializers.ValidationError(
                     f'{field} - Это обязательное поле.'
@@ -262,8 +262,8 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.title = validated_data.get('title', instance.title)
         instance.text = validated_data.get('text', instance.text)
-        instance.tiempo = validated_data.get(
-            'tiempo', instance.tiempo)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         Receipt.objects.filter(
@@ -283,8 +283,8 @@ class FavoriteSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='receipt.id')
     title = serializers.ReadOnlyField(source='receipt.title')
     image = serializers.ImageField(source='receipt.image', required=False)
-    tiempo = serializers.IntegerField(
-        source='receipt.tiempo', required=False)
+    cooking_time = serializers.IntegerField(
+        source='receipt.cooking_time', required=False)
 
     class Meta:
         model = Favorite
@@ -292,7 +292,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'image',
-            'tiempo',
+            'cooking_time',
         )
 
     def create(self, validated_data):
@@ -314,8 +314,8 @@ class ForShopSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='receipt.id')
     title = serializers.ReadOnlyField(source='receipt.title')
     image = serializers.ImageField(source='receipt.image', required=False)
-    tiempo = serializers.IntegerField(
-        source='receipt.tiempo', required=False)
+    cooking_time = serializers.IntegerField(
+        source='receipt.cooking_time', required=False)
 
     class Meta:
         model = For_shop
@@ -323,7 +323,7 @@ class ForShopSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'image',
-            'tiempo',
+            'cooking_time',
         )
 
     def create(self, validated_data):

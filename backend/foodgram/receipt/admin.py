@@ -19,10 +19,10 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(models.Receipt)
 class ReceiptAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'title', 'tiempo', 'text',
+    list_display = ('__str__', 'title', 'cooking_time', 'text',
                     'image', 'author', 'in_favorites')
     list_editable = (
-        'title', 'tiempo', 'text',
+        'title', 'cooking_time', 'text',
         'image', 'author'
     )
     readonly_fields = ('in_favorites',)

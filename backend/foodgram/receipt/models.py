@@ -95,7 +95,7 @@ class Receipt(models.Model):
         help_text='Выберите теги',
         blank=False,
     )
-    tiempo = models.DecimalField(
+    cooking_time = models.DecimalField(
         verbose_name='Время приготовления',
         help_text='Укажите время приготовления в минутах',
         null=False,
