@@ -17,6 +17,8 @@ class Ingredient(models.Model):
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
+    def __str__(self):
+        return f'{self.name}'
 
 class Tag(models.Model):
     name = models.CharField(
@@ -49,6 +51,9 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Receipt(models.Model):
@@ -108,7 +113,7 @@ class Receipt(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return self.text[:15]
+        return f'{self.name} {self.author}'
 
 
 class Quantity_ingredientes(models.Model):
@@ -188,3 +193,6 @@ class For_shop(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+    
+    def __str__(self):
+        return f'{self.user.username} - {self.receipt.title}'

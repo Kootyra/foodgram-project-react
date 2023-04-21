@@ -34,6 +34,13 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.request.method == "GET":
             self.permission_classes = [AdminOrUser]
         return super(UserViewSet, self).get_permissions()
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["subscriptions"] = set(Follow.objects.filter(
+            user_id=self.request.user)
+            .values_list('author_id', flat=True)),
+        return context
 
     @action(
         methods=[
@@ -83,13 +90,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = FollowSerializer(
             authors,
             many=True,
-            context={
-                    'request': request,
-                    'subscriptions':
-                    set(Follow.objects.filter(user_id=self.request.user)
-                        .values_list('author_id', flat=True))
-            }
-        )
+            context=self.get_serializer_context())
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'],
@@ -120,10 +121,6 @@ class UserViewSet(viewsets.ModelViewSet):
                               author=author).delete()
             return Response({'detail': 'Вы отписались от пользователя'},
                             status=status.HTTP_204_NO_CONTENT)
-
-    def get_serializer_context(self):
-        context = super(UserViewSet, self).get_serializer_context()
-        return context
 
 
 class UserTokenViewSet(viewsets.ViewSet):
@@ -170,6 +167,16 @@ class ReceiptViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return ReceiptReadSerializer
         return ReceiptCreateSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["favorite"] = set(Follow.objects.filter(
+            user_id=self.request.user)
+            .values_list('author_id', flat=True)),
+        context["shopping_cart"] = set(Follow.objects.filter(
+            user_id=self.request.user)
+            .values_list('author_id', flat=True)),
+        return context
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(permissions.IsAuthenticated,))
@@ -211,7 +218,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
-            return Response({'errors': 'Рецепт ранее добавлен в избранное'},
+            return Response({'errors': 'Рецепт ранее добавлен в корзину'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':

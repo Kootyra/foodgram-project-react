@@ -5,7 +5,7 @@ from . import models
 
 @admin.register(models.Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'name', 'izmerenie')
+    list_display = ('__str__', 'izmerenie')
     list_filter = ('name', )
     search_fields = ('name', )
 
