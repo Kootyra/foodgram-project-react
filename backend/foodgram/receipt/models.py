@@ -8,7 +8,7 @@ class Ingredient(models.Model):
         'Наименование ингридиента',
         max_length=100
     )
-    izmerenie = models.CharField(
+    measurement_unit = models.CharField(
         'Единица измерения',
         max_length=15
     )
@@ -64,7 +64,7 @@ class Receipt(models.Model):
         on_delete=models.CASCADE,
         null=False,
     )
-    title = models.CharField(
+    name = models.CharField(
         verbose_name='Название рецепта',
         help_text='Укажите название блюда',
         null=False,
@@ -83,7 +83,7 @@ class Receipt(models.Model):
         null=False,
         )
 
-    ingridientes = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
         help_text='Выберите ингридиенты',
@@ -113,7 +113,7 @@ class Receipt(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'{self.title} {self.author}'
+        return f'{self.name} {self.author}'
 
 
 class Quantity_ingredientes(models.Model):
@@ -127,7 +127,7 @@ class Quantity_ingredientes(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    quantity = models.IntegerField(
+    amount = models.IntegerField(
         'Количество',
         validators=[MinValueValidator(1)]
     )
@@ -143,10 +143,10 @@ class Quantity_ingredientes(models.Model):
         ]
 
     def __str__(self):
-        return (f'{self.receipt.title}: '
+        return (f'{self.receipt.name}: '
                 f'{self.ingredient.name} - '
-                f'{self.quantity} '
-                f'{self.ingredient.izmerenie}')
+                f'{self.amount} '
+                f'{self.ingredient.measurement_unit}')
 
 
 class Favorite(models.Model):
@@ -174,7 +174,7 @@ class Favorite(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.user.username} - {self.receipt.title}'
+        return f'{self.user.username} - {self.receipt.name}'
 
 
 class For_shop(models.Model):
@@ -195,4 +195,4 @@ class For_shop(models.Model):
         verbose_name_plural = 'Списки покупок'
     
     def __str__(self):
-        return f'{self.user.username} - {self.receipt.title}'
+        return f'{self.user.username} - {self.receipt.name}'

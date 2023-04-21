@@ -5,7 +5,7 @@ from . import models
 
 @admin.register(models.Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'izmerenie')
+    list_display = ('__str__', 'measurement_unit')
     list_filter = ('name', )
     search_fields = ('name', )
 
@@ -19,14 +19,14 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(models.Receipt)
 class ReceiptAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'title', 'cooking_time', 'text',
+    list_display = ('__str__', 'name', 'cooking_time', 'text',
                     'image', 'author', 'in_favorites')
     list_editable = (
-        'title', 'cooking_time', 'text',
+        'name', 'cooking_time', 'text',
         'image', 'author'
     )
     readonly_fields = ('in_favorites',)
-    list_filter = ('title', 'author', 'tags')
+    list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
 
     @admin.display(description='В избранном')
@@ -36,8 +36,8 @@ class ReceiptAdmin(admin.ModelAdmin):
 
 @admin.register(models.Quantity_ingredientes)
 class QuantityIngredientAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'receipt', 'ingredient', 'quantity')
-    list_editable = ('receipt', 'ingredient', 'quantity')
+    list_display = ('__str__', 'receipt', 'ingredient', 'amount')
+    list_editable = ('receipt', 'ingredient', 'amount')
 
 
 @admin.register(models.Favorite)

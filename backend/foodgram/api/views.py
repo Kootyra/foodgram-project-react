@@ -236,9 +236,9 @@ class ReceiptViewSet(viewsets.ModelViewSet):
             Quantity_ingredientes.objects
             .filter(receipt__shopping_receipt__user=request.user)
             .values('ingredient')
-            .annotate(total_amount=Sum('quantity'))
+            .annotate(total_amount=Sum('amount'))
             .values_list('ingredient__name', 'total_amount',
-                         'ingredient__izmerenie')
+                         'ingredient__measurement_unit')
         )
         file_list = []
         [file_list.append(
