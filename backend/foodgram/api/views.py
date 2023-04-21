@@ -34,13 +34,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.request.method == "GET":
             self.permission_classes = [AdminOrUser]
         return super(UserViewSet, self).get_permissions()
-    
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context["subscriptions"] = set(Follow.objects.filter(
-            user_id=self.request.user)
-            .values_list('author_id', flat=True)),
-        return context
 
     @action(
         methods=[
@@ -85,12 +78,12 @@ class UserViewSet(viewsets.ModelViewSet):
             )
     def subscriptions(self, request):
         authors = self.paginate_queryset(
-            Follow.objects.filter(user=request.user)
+            User.objects.filter(user=request.user)
         )
         serializer = FollowSerializer(
             authors,
             many=True,
-            context=self.get_serializer_context())
+            context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'],
@@ -100,12 +93,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = FollowSerializer(
+                author,
                 context={
                     'author': author,
                     'request': request,
-                    'subscriptions':
-                    set(Follow.objects.filter(user_id=self.request.user)
-                        .values_list('author_id', flat=True))
                 }, data=request.data
             )
             if serializer.is_valid(raise_exception=True):

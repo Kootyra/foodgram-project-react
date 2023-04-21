@@ -104,7 +104,12 @@ class FollowSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        return obj.id in self.context['subscriptions']
+        return (
+            self.context.get('request').user.is_authenticated
+            and Follow.objects.filter(user=self.context['request'].user,
+                                      author=obj).exists()
+        )
+
 
     def get_receipt_count(self, obj):
         return obj.receipt.count()
