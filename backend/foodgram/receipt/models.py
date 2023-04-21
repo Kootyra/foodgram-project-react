@@ -113,7 +113,7 @@ class Receipt(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'{self.name} {self.author}'
+        return f'{self.title} {self.author}'
 
 
 class Quantity_ingredientes(models.Model):
