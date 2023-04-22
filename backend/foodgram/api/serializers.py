@@ -147,10 +147,12 @@ class ReceiptSerializer(serializers.ModelSerializer):
     image = Base64ImageField(read_only=True)
     name = serializers.ReadOnlyField()
     cooking_time = serializers.ReadOnlyField()
+    first_name = serializers.ReadOnlyField()
+    last_name = serializers.ReadOnlyField()
 
     class Meta:
         model = Receipt
-        fields = ('id', 'name',
+        fields = ('id', 'name', 
                   'image', 'cooking_time')
 
 
@@ -178,8 +180,22 @@ class ReceiptIngredientSerializer(serializers.ModelSerializer):
                   'measurement_unit', 'amount')
 
 
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        return (user.is_authenticated
+                and user.subscriber.filter(author=obj).exists())
+
+
 class ReceiptReadSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = ReceiptIngredientSerializer(
         many=True, read_only=True, source='receipt')

@@ -152,16 +152,6 @@ class ReceiptViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return ReceiptReadSerializer
         return ReceiptCreateSerializer
-    
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context["favorite"] = set(Subscriptions.objects.filter(
-            user_id=self.request.user)
-            .values_list('author_id', flat=True)),
-        context["shopping_cart"] = set(Subscriptions.objects.filter(
-            user_id=self.request.user)
-            .values_list('author_id', flat=True)),
-        return context
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(permissions.IsAuthenticated,))
