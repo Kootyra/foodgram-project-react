@@ -5,6 +5,7 @@ from receipt.models import (Ingredient, Receipt, Tag, Quantity_ingredientes,
                             Favorite, For_shop)
 from django.core import exceptions as django_exceptions
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class CreateUserSerializer(UserSerializer):
@@ -110,7 +111,6 @@ class FollowSerializer(serializers.ModelSerializer):
                                       author=obj).exists()
         )
 
-
     def get_receipt_count(self, obj):
         return obj.receipt.count()
 
@@ -122,6 +122,25 @@ class FollowSerializer(serializers.ModelSerializer):
             receipts = receipts[:int(limit)]
         serializer = ReceiptSerializer(receipts, many=True, read_only=True)
         return serializer.data
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ('user', 'author')
+        validators = (
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author',),
+                message='У Вас уже есть подписка на этого автора'
+            ),
+        )
+
+    def validate(self, data):
+        if data.get('user') == data.get('author'):
+            raise serializers.ValidationError(
+                'Вы пытаетесь подписаться на себя')
+        return data
 
 
 class ReceiptSerializer(serializers.ModelSerializer):

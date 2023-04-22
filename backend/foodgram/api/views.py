@@ -6,7 +6,7 @@ from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from users.models import User, Follow
 from receipt.models import Ingredient, Receipt, Tag, Favorite, For_shop
-from .serializers import (FollowSerializer,
+from .serializers import (FollowSerializer, SubscribeSerializer,
                           IngredientSerializer, TagSerializer,
                           ReceiptCreateSerializer, NewPasswordSerializer,
                           ReceiptReadSerializer, CreateUserSerializer,
@@ -78,7 +78,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
     def subscriptions(self, request):
         authors = self.paginate_queryset(
-            User.objects.filter(user=request.user)
+            User.objects.filter(following__user=request.user)
         )
         serializer = FollowSerializer(
             authors,
@@ -89,24 +89,18 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(permissions.IsAuthenticated,))
     def subscribe(self, request, **kwargs):
+        user = request.user
         author = get_object_or_404(User, id=kwargs['pk'])
-
+        serializer = SubscribeSerializer(
+            data={'user': user.id,
+                  'author': author.id, }
+        )
         if request.method == 'POST':
-            serializer = FollowSerializer(
-                author,
-                context={
-                    'author': author,
-                    'request': request,
-                }, data=request.data
-            )
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return Response(serializer.data,
-                                status=status.HTTP_201_CREATED)
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+
         if request.method == 'DELETE':
             get_object_or_404(Follow, user=request.user,
                               author=author).delete()
