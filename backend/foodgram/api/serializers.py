@@ -141,6 +141,16 @@ class SubscribeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы пытаетесь подписаться на себя')
         return data
+    
+    def get_is_subscribed(self, obj):
+        return (
+            self.context.get('request').user.is_authenticated
+            and Subscriptions.objects.filter(user=self.context['request'].user,
+                                             author=obj).exists()
+        )
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
 
 
 class ReceiptSerializer(serializers.ModelSerializer):
@@ -179,7 +189,6 @@ class ReceiptIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name',
                   'measurement_unit', 'amount')
 
-
 class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
@@ -192,7 +201,6 @@ class CustomUserSerializer(UserSerializer):
         user = self.context['request'].user
         return (user.is_authenticated
                 and user.subscriber.filter(author=obj).exists())
-
 
 class ReceiptReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
@@ -231,7 +239,7 @@ class ReceiptIngredientCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
     class Meta:
-        model = Ingredient
+        model = Quantity_ingredientes
         fields = ('id', 'amount')
 
 
