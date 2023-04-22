@@ -1,6 +1,6 @@
 from djoser.serializers import UserSerializer, serializers
 from django.contrib.auth.password_validation import validate_password
-from users.models import User, Follow
+from users.models import User, Subscriptions
 from receipt.models import (Ingredient, Receipt, Tag, Quantity_ingredientes,
                             Favorite, For_shop)
 from django.core import exceptions as django_exceptions
@@ -73,7 +73,7 @@ class NewPasswordSerializer(serializers.Serializer):
         return validated_data
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class SubscriptionsSerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField()
     username = serializers.ReadOnlyField()
     is_subscribed = serializers.SerializerMethodField()
@@ -91,7 +91,7 @@ class FollowSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'error': 'Вы не можете подписаться на себя'}
             )
-        if Follow.objects.filter(
+        if Subscriptions.objects.filter(
             user=user,
             author=author
         ).exists():
@@ -99,7 +99,7 @@ class FollowSerializer(serializers.ModelSerializer):
                 {'error': 'Вы уже подписаны на этого автора'}
             )
 
-        return Follow.objects.create(
+        return Subscriptions.objects.create(
             user=user,
             author=author
         )
@@ -107,8 +107,8 @@ class FollowSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         return (
             self.context.get('request').user.is_authenticated
-            and Follow.objects.filter(user=self.context['request'].user,
-                                      author=obj).exists()
+            and Subscriptions.objects.filter(user=self.context['request'].user,
+                                             author=obj).exists()
         )
 
     def get_receipt_count(self, obj):
@@ -126,11 +126,11 @@ class FollowSerializer(serializers.ModelSerializer):
 
 class SubscribeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Follow
+        model = Subscriptions
         fields = ('user', 'author')
         validators = (
             UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
+                queryset=Subscriptions.objects.all(),
                 fields=('user', 'author',),
                 message='У Вас уже есть подписка на этого автора'
             ),

@@ -4,9 +4,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
-from users.models import User, Follow
+from users.models import User, Subscriptions
 from receipt.models import Ingredient, Receipt, Tag, Favorite, For_shop
-from .serializers import (FollowSerializer, SubscribeSerializer,
+from .serializers import (SubscriptionsSerializer, SubscribeSerializer,
                           IngredientSerializer, TagSerializer,
                           ReceiptCreateSerializer, NewPasswordSerializer,
                           ReceiptReadSerializer, CreateUserSerializer,
@@ -78,9 +78,9 @@ class UserViewSet(viewsets.ModelViewSet):
             )
     def subscriptions(self, request):
         authors = self.paginate_queryset(
-            User.objects.filter(following__user=request.user)
+            User.objects.filter(subscription__user=request.user)
         )
-        serializer = FollowSerializer(
+        serializer = SubscriptionsSerializer(
             authors,
             many=True,
             context={'request': request})
@@ -102,7 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            get_object_or_404(Follow, user=request.user,
+            get_object_or_404(Subscriptions, user=request.user,
                               author=author).delete()
             return Response({'detail': 'Вы отписались от пользователя'},
                             status=status.HTTP_204_NO_CONTENT)
@@ -155,10 +155,10 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context["favorite"] = set(Follow.objects.filter(
+        context["favorite"] = set(Subscriptions.objects.filter(
             user_id=self.request.user)
             .values_list('author_id', flat=True)),
-        context["shopping_cart"] = set(Follow.objects.filter(
+        context["shopping_cart"] = set(Subscriptions.objects.filter(
             user_id=self.request.user)
             .values_list('author_id', flat=True)),
         return context

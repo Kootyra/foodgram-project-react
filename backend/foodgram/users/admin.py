@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Follow
+from .models import User, Subscriptions
 
 
 @admin.register(User)
@@ -13,7 +13,7 @@ class UserAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Follow)
+@admin.register(Subscriptions)
 class SubscribeAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'user', 'author')
     list_editable = ('user', 'author')
