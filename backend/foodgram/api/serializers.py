@@ -289,18 +289,16 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
             )
         return obj
 
-    @transaction.atomic
     def tags_and_ingredients_set(self, receipt, tags, ingredients):
         receipt.tags.set(tags)
-        Ingredient.objects.bulk_create(
-            [Ingredient(
+        Quantity_ingredientes.objects.bulk_create(
+            [Quantity_ingredientes(
                 receipt=receipt,
                 ingredient=Ingredient.objects.get(pk=ingredient['id']),
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
         )
 
-    @transaction.atomic
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
@@ -309,7 +307,6 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
         self.tags_and_ingredients_set(receipt, tags, ingredients)
         return receipt
     
-    @transaction.atomic
     def update(self, instance, validated_data):
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
