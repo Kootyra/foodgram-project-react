@@ -6,6 +6,7 @@ from receipt.models import (Ingredient, Receipt, Tag, Quantity_ingredientes,
 from django.core import exceptions as django_exceptions
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.validators import UniqueTogetherValidator
+from django.db import transaction
 
 
 class CreateUserSerializer(UserSerializer):
@@ -157,12 +158,10 @@ class ReceiptSerializer(serializers.ModelSerializer):
     image = Base64ImageField(read_only=True)
     name = serializers.ReadOnlyField()
     cooking_time = serializers.ReadOnlyField()
-    first_name = serializers.ReadOnlyField()
-    last_name = serializers.ReadOnlyField()
 
     class Meta:
         model = Receipt
-        fields = ('id', 'name', 
+        fields = ('id', 'name',
                   'image', 'cooking_time')
 
 
@@ -189,6 +188,7 @@ class ReceiptIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name',
                   'measurement_unit', 'amount')
 
+
 class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
@@ -201,6 +201,7 @@ class CustomUserSerializer(UserSerializer):
         user = self.context['request'].user
         return (user.is_authenticated
                 and user.subscriber.filter(author=obj).exists())
+
 
 class ReceiptReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
@@ -288,6 +289,7 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
             )
         return obj
 
+    @transaction.atomic
     def tags_and_ingredients_set(self, receipt, tags, ingredients):
         receipt.tags.set(tags)
         Ingredient.objects.bulk_create(
@@ -298,6 +300,7 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
             ) for ingredient in ingredients]
         )
 
+    @transaction.atomic
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
@@ -305,7 +308,8 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
                                          **validated_data)
         self.tags_and_ingredients_set(receipt, tags, ingredients)
         return receipt
-
+    
+    @transaction.atomic
     def update(self, instance, validated_data):
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
