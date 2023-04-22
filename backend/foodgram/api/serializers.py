@@ -315,7 +315,7 @@ class ReceiptCreateSerializer(serializers.ModelSerializer):
             'cooking_time', instance.cooking_time)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        Receipt.objects.filter(
+        Quantity_ingredientes.objects.filter(
             receipt=instance,
             ingredient__in=instance.ingredients.all()).delete()
         self.tags_and_ingredients_set(instance, tags, ingredients)
