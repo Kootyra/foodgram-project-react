@@ -6,92 +6,46 @@ from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from users.models import User, Subscriptions
 from receipt.models import Ingredient, Receipt, Tag, Favorite, For_shop
-from .serializers import (SubscriptionsSerializer, SubscribeSerializer,
+from .serializers import (SubscribeSerializer,
                           IngredientSerializer, TagSerializer,
-                          ReceiptCreateSerializer, NewPasswordSerializer,
-                          ReceiptReadSerializer, CreateUserSerializer,
-                          ProfilesSerializer, UserTokenSerializer,
+                          ReceiptCreateSerializer,
+                          ReceiptReadSerializer,
                           Quantity_ingredientes, FavoriteSerializer,
-                          ForShopSerializer)
-from .permissions import AdminOrUser, IsAuthorOrReadOnly
-from rest_framework_simplejwt.tokens import AccessToken
+                          ForShopSerializer, UserSubscribeSerializer,
+                          CustomUserCreateSerializer, CustomPasswordSerializer,
+                          CustomUserSerializer, )
+from .permissions import IsAuthorOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ReceiptFilter
+from djoser.views import UserViewSet
+from .mixins import ListSubscriptionViewSet
 
 FILE = 'shop.txt'
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+class CustomUserViewSet(UserViewSet):
+    add_serializer = UserSubscribeSerializer
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return ProfilesSerializer
-        return CreateUserSerializer
+        if self.action == 'create':
+            return CustomUserCreateSerializer
+        if self.action == 'set_password':
+            return CustomPasswordSerializer
+        return CustomUserSerializer
 
     def get_permissions(self):
-        self.permission_classes = [permissions.AllowAny]
-        if self.request.method == "GET":
-            self.permission_classes = [AdminOrUser]
-        return super(UserViewSet, self).get_permissions()
+        if self.action == 'retrieve':
+            self.permission_classes = (permissions.IsAuthenticated,)
+        return super().get_permissions()
 
     @action(
-        methods=[
-            "get",
-            "post",
-        ],
-        detail=False,
+        methods=('post', 'delete',),
+        detail=True,
+        permission_classes=(permissions.IsAuthenticated,),
     )
-    def profile(self, request):
+    def subscribe(self, request, id=None):
         user = request.user
-        if request.method == "GET":
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "POST":
-            serializer = CreateUserSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-    @action(detail=False, methods=['get'],
-            pagination_class=None,
-            permission_classes=(permissions.IsAuthenticated,))
-    def me(self, request):
-        serializer = ProfilesSerializer(request.user)
-        return Response(serializer.data,
-                        status=status.HTTP_200_OK)
-
-    @action(detail=False,
-            methods=['post'],
-            permission_classes=(permissions.IsAuthenticated,))
-    def set_password(self, request):
-        serializer = NewPasswordSerializer(request.user, data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response({'detail': 'New password save'},
-                        status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=False,
-            methods=['get', ],
-            permission_classes=(permissions.IsAuthenticated,),
-            )
-    def subscriptions(self, request):
-        authors = self.paginate_queryset(
-            User.objects.filter(subscription__user=request.user)
-        )
-        serializer = SubscriptionsSerializer(
-            authors,
-            many=True,
-            context={'request': request})
-        return self.get_paginated_response(serializer.data)
-
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=(permissions.IsAuthenticated,))
-    def subscribe(self, request, **kwargs):
-        user = request.user
-        author = get_object_or_404(User, id=kwargs['pk'])
+        author = get_object_or_404(User, pk=id)
         serializer = SubscribeSerializer(
             data={'user': user.id,
                   'author': author.id, }
@@ -99,27 +53,27 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data,
+            serializer_show = UserSubscribeSerializer(
+                author,
+                context={'recipes_limit': request.GET.get('recipes_limit')})
+            return Response(serializer_show.data,
                             status=status.HTTP_201_CREATED)
-
         if request.method == 'DELETE':
-            get_object_or_404(Subscriptions, user=request.user,
-                              author=author).delete()
-            return Response({'detail': 'Вы отписались от пользователя'},
-                            status=status.HTTP_204_NO_CONTENT)
+            subscription = Subscriptions.objects.filter(
+                user=user,
+                author=author
+            )
+            subscription.delete()
+            return Response(
+                status=status.HTTP_204_NO_CONTENT)
 
 
-class UserTokenViewSet(viewsets.ViewSet):
-    permission_classes = (permissions.AllowAny,)
+class SubscriptionViewSet(ListSubscriptionViewSet):
+    serializer_class = UserSubscribeSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
-    def token(self, request):
-        serializer = UserTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_form = serializer.initial_data.get('email')
-        user_form_pas = serializer.initial_data.get('password')
-        user = get_object_or_404(User, email=user_form, password=user_form_pas)
-        token = AccessToken.for_user(user)
-        return Response({"token": str(token)}, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return User.objects.filter(subscription__user=self.request.user)
 
 
 class IngredientViewSet(mixins.ListModelMixin,
@@ -157,12 +111,12 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(permissions.IsAuthenticated,))
     def favorite(self, request, **kwargs):
-        receipt = get_object_or_404(Receipt, id=kwargs['pk'])
+        recipe = get_object_or_404(Receipt, id=kwargs['pk'])
         user = request.user
         if request.method == 'POST':
-            data = {'user': user.id, 'receipt': receipt.id}
+            data = {'user': user.id, 'recipe': recipe.id}
             serializer = FavoriteSerializer(context={
-                'receipt': receipt,
+                'recipe': recipe,
                 'request': request
             }, data=data)
             if serializer.is_valid(raise_exception=True):
@@ -174,7 +128,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             get_object_or_404(Favorite, user=request.user,
-                              receipt=receipt).delete()
+                              recipe=recipe).delete()
             return Response({'detail': 'Рецепт удален из избранного'},
                             status=status.HTTP_204_NO_CONTENT)
 
@@ -182,12 +136,12 @@ class ReceiptViewSet(viewsets.ModelViewSet):
             permission_classes=(permissions.IsAuthenticated,),
             pagination_class=None)
     def shopping_cart(self, request, **kwargs):
-        receipt = get_object_or_404(Receipt, id=kwargs['pk'])
+        recipe = get_object_or_404(Receipt, id=kwargs['pk'])
         user = request.user
         if request.method == 'POST':
-            data = {'user': user.id, 'receipt': receipt.id}
+            data = {'user': user.id, 'recipe': recipe.id}
             serializer = ForShopSerializer(context={
-                'receipt': receipt,
+                'recipe': recipe,
                 'request': request
             }, data=data)
             if serializer.is_valid(raise_exception=True):
@@ -199,7 +153,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             get_object_or_404(For_shop, user=request.user,
-                              receipt=receipt).delete()
+                              recipe=recipe).delete()
             return Response(
                 {'detail': 'Рецепт успешно удален из списка покупок.'},
                 status=status.HTTP_204_NO_CONTENT
@@ -210,7 +164,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request, **kwargs):
         ingredients = (
             Quantity_ingredientes.objects
-            .filter(receipt__shopping_receipt__user=request.user)
+            .filter(recipe__shopping_recipe__user=request.user)
             .values('ingredient')
             .annotate(total_amount=Sum('amount'))
             .values_list('ingredient__name', 'total_amount',

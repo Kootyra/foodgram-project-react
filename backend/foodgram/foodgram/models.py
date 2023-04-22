@@ -112,7 +112,7 @@ class Receipt(models.Model):
 
 
 class Quantity_ingredientes(models.Model):
-    receipt = models.ForeignKey(
+    recipe = models.ForeignKey(
         Receipt,
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
@@ -132,13 +132,13 @@ class Quantity_ingredientes(models.Model):
         verbose_name_plural = 'Количество ингредиентов для приготовления'
         constraints = [
             models.UniqueConstraint(
-                fields=['receipt', 'ingredient'],
+                fields=['recipe', 'ingredient'],
                 name='unique_combination'
             )
         ]
 
     def __str__(self):
-        return (f'{self.receipt.name}: '
+        return (f'{self.recipe.name}: '
                 f'{self.ingredient.name} - '
                 f'{self.amount} '
                 f'{self.ingredient.measurement_unit}')
@@ -151,11 +151,11 @@ class Favorite(models.Model):
         related_name='favorite_user',
         verbose_name='Любимый автор',
     )
-    receipt = models.ForeignKey(
+    recipe = models.ForeignKey(
         Receipt,
         on_delete=models.CASCADE,
         verbose_name='Любимый рецепт',
-        related_name='favorite_receipt',
+        related_name='favorite_recipe',
     )
 
     class Meta:
@@ -163,13 +163,13 @@ class Favorite(models.Model):
         verbose_name_plural = 'Избранное'
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'receipt'],
+                fields=['user', 'recipe'],
                 name='unique_favorite'
             )
         ]
 
     def __str__(self):
-        return f'{self.user.username} - {self.receipt.name}'
+        return f'{self.user.username} - {self.recipe.name}'
 
 
 class For_shop(models.Model):
@@ -178,11 +178,11 @@ class For_shop(models.Model):
         on_delete=models.CASCADE,
         related_name='shopping_user',
     )
-    receipt = models.ForeignKey(
+    recipe = models.ForeignKey(
         Receipt,
         on_delete=models.CASCADE,
         verbose_name='В список покупок',
-        related_name='shopping_receipt',
+        related_name='shopping_recipe',
     )
 
     class Meta:

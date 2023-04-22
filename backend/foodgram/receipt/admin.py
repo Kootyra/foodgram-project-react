@@ -31,22 +31,22 @@ class ReceiptAdmin(admin.ModelAdmin):
 
     @admin.display(description='В избранном')
     def in_favorites(self, obj):
-        return obj.favorite_receipt.count()
+        return obj.favorite_recipe.count()
 
 
 @admin.register(models.Quantity_ingredientes)
 class QuantityIngredientAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'receipt', 'ingredient', 'amount')
-    list_editable = ('receipt', 'ingredient', 'amount')
+    list_display = ('__str__', 'recipe', 'ingredient', 'amount')
+    list_editable = ('recipe', 'ingredient', 'amount')
 
 
 @admin.register(models.Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'user', 'receipt')
-    list_editable = ('user', 'receipt')
+    list_display = ('__str__', 'user', 'recipe')
+    list_editable = ('user', 'recipe')
 
 
 @admin.register(models.For_shop)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'user', 'receipt')
-    list_editable = ('user', 'receipt')
+    list_display = ('__str__', 'user', 'recipe')
+    list_editable = ('user', 'recipe')
