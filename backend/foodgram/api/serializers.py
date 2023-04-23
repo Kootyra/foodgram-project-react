@@ -131,7 +131,7 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = ReceiptIngredientSerializer(
-        many=True, read_only=True, source='recipe')
+        many=True, read_only=True, source='recipes')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField()
