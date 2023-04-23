@@ -19,12 +19,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ReceiptFilter
 from djoser.views import UserViewSet
 from .mixins import ListSubscriptionViewSet
+from .paginators import PageLimitPagination
 
 FILE = 'shop.txt'
 
 
 class CustomUserViewSet(UserViewSet):
     add_serializer = UserSubscribeSerializer
+    pagination_class = PageLimitPagination
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -71,6 +73,7 @@ class CustomUserViewSet(UserViewSet):
 class SubscriptionViewSet(ListSubscriptionViewSet):
     serializer_class = UserSubscribeSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = PageLimitPagination
 
     def get_queryset(self):
         return User.objects.filter(subscription__user=self.request.user)
@@ -99,6 +102,7 @@ class TagViewSet(mixins.ListModelMixin,
 class ReceiptViewSet(viewsets.ModelViewSet):
     queryset = Receipt.objects.all()
     permission_classes = (IsAuthorOrReadOnly, )
+    pagination_class = PageLimitPagination
     filter_backends = (DjangoFilterBackend, )
     filterset_class = ReceiptFilter
     http_method_names = ['get', 'post', 'patch', 'create', 'delete']
