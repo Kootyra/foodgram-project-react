@@ -124,9 +124,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        recipe = get_object_or_404(Receipt, id=self.kwargs['pk'])
         context.update({"request": self.request,
-                        "recipe": recipe,
                         "favorite": Favorite.objects
                         .filter(user_id=self.request.user)
                         .values_list('recipe_id', flat=True),
@@ -143,9 +141,10 @@ class ReceiptViewSet(viewsets.ModelViewSet):
         user = request.user
         if request.method == 'POST':
             data = {'user': user.id, 'recipe': recipe.id}
-            serializer = FavoriteSerializer(context=self
-                                            .get_serializer_context(),
-                                            data=data)
+            serializer = FavoriteSerializer(context={
+                 'recipe': recipe,
+                 'request': request
+             }, data=data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data,
@@ -167,9 +166,10 @@ class ReceiptViewSet(viewsets.ModelViewSet):
         user = request.user
         if request.method == 'POST':
             data = {'user': user.id, 'recipe': recipe.id}
-            serializer = ForShopSerializer(context=self
-                                           .get_serializer_context(),
-                                           data=data)
+            serializer = ForShopSerializer(context={
+                 'recipe': recipe,
+                 'request': request
+             }, data=data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data,
@@ -203,3 +203,4 @@ class ReceiptViewSet(viewsets.ModelViewSet):
                             content_type='text/plain')
         file['Content-Disposition'] = (f'attachment; filename={FILE}')
         return file
+

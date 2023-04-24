@@ -153,6 +153,7 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
             return obj.id in self.context.get('shopping_cart')
         return False
 
+
 class ReceiptIngredientCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
