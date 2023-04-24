@@ -40,6 +40,15 @@ class CustomUserViewSet(UserViewSet):
             self.permission_classes = (permissions.IsAuthenticated,)
         return super().get_permissions()
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request,
+                        'subscriptions':
+                        set(Subscriptions.objects
+                            .filter(user_id=self.request.user)
+                            .values_list('author_id', flat=True))})
+        return context
+
     @action(
         methods=('post', 'delete',),
         detail=True,
@@ -50,7 +59,8 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, pk=id)
         serializer = SubscribeSerializer(
             data={'user': user.id,
-                  'author': author.id, }
+                  'author': author.id, },
+            context=self.get_serializer_context()
         )
         if request.method == 'POST':
             serializer.is_valid(raise_exception=True)
@@ -112,6 +122,20 @@ class ReceiptViewSet(viewsets.ModelViewSet):
             return ReceiptReadSerializer
         return ReceiptCreateSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        recipe = get_object_or_404(Receipt, id=self.kwargs['pk'])
+        context.update({"request": self.request,
+                        "recipe": recipe,
+                        "favorite": Favorite.objects
+                        .filter(user_id=self.request.user)
+                        .values_list('recipe_id', flat=True),
+                        "shopping_cart": For_shop.objects
+                        .filter(user_id=self.request.user)
+                        .values_list('recipe_id', flat=True)})
+        return context
+
+
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(permissions.IsAuthenticated,))
     def favorite(self, request, **kwargs):
@@ -119,10 +143,9 @@ class ReceiptViewSet(viewsets.ModelViewSet):
         user = request.user
         if request.method == 'POST':
             data = {'user': user.id, 'recipe': recipe.id}
-            serializer = FavoriteSerializer(context={
-                'recipe': recipe,
-                'request': request
-            }, data=data)
+            serializer = FavoriteSerializer(context=self
+                                            .get_serializer_context(),
+                                            data=data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data,
@@ -144,10 +167,9 @@ class ReceiptViewSet(viewsets.ModelViewSet):
         user = request.user
         if request.method == 'POST':
             data = {'user': user.id, 'recipe': recipe.id}
-            serializer = ForShopSerializer(context={
-                'recipe': recipe,
-                'request': request
-            }, data=data)
+            serializer = ForShopSerializer(context=self
+                                           .get_serializer_context(),
+                                           data=data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data,

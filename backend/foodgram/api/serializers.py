@@ -16,9 +16,7 @@ class CustomUserSerializer(UserSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        return (user.is_authenticated
-                and user.subscriber.filter(author=obj).exists())
+        return obj.id in self.context['subscriptions']
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -122,9 +120,10 @@ class CustomUserSerializer(UserSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        return (user.is_authenticated
-                and user.subscriber.filter(author=obj).exists())
+        if 'subscriptions' in self.context:
+            return obj.id in self.context.get('subscriptions')
+        return False
+
 
 
 class ReceiptReadSerializer(serializers.ModelSerializer):
@@ -145,20 +144,14 @@ class ReceiptReadSerializer(serializers.ModelSerializer):
                   'text', 'cooking_time')
 
     def get_is_favorited(self, obj):
-        return (
-            self.context.get('request').user.is_authenticated
-            and Favorite.objects.filter(user=self.context['request'].user,
-                                        recipe=obj).exists()
-        )
+        if 'favorites' in self.context:
+            return obj.id in self.context.get('favorites')
+        return False
 
     def get_is_in_shopping_cart(self, obj):
-        return (
-            self.context.get('request').user.is_authenticated
-            and For_shop.objects.filter(
-                user=self.context['request'].user,
-                recipe=obj).exists()
-        )
-
+        if 'shopping_cart' in self.context:
+            return obj.id in self.context.get('shopping_cart')
+        return False
 
 class ReceiptIngredientCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
@@ -268,7 +261,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def create(self, validated_data):
+    def create(self, obj):
         user = self.context['request'].user
         recipe = self.context.get('recipe')
         if Favorite.objects.filter(
